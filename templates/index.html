@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/main.css') }}"
+    />
+    <title>Crop Yield Prediction</title>
+  </head>
+  <body>
+    <div class="param-form" >
+      <form>
+        <br><label for="stateName">Choose a State:</label>
+        <select name="stateName" id="stateName"></select></form></br>
+        <br></br>
+        <br><label for="stateName">Choose a Season:</label>
+        <select name="season" id="season"></select></br>
+        <br></br>
+        <br><label for="year">Year:</label>
+        <input type="text" name="year" id="year" placeholder="20xx (curr yearby default)/"></br>
+        <br></br>
+        <button onClick="predict()">Submit</button>
+      </form>
+    </div>
+    <br></br>
+    <div>
+      <p>List of Top 3 Crops for The Given Season And Area ⬇️⬇️</p>
+      <p id="results">Submit the Form to get Results 😎 </p>
+    </div>
+  </body>
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</html>
