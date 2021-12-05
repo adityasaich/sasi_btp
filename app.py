@@ -30,4 +30,4 @@ f = open('params_from_ml.json')
 data = json.load(f)
 f.close()
 classParams['params'] = data
-app.run(debug=True)
+app.run(debug=False)
