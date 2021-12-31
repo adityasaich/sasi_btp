@@ -36,7 +36,7 @@ function predict() {
       let crops = data.result;
       let htmlString = "";
       for (let i = 0; i < crops.length; i++) {
-        htmlString += "<p><h2>" + crops[i] + "</h2></p>";
+        htmlString += "<p><h2>" + crops[i][0] + " " + crops[i][1] + "</h2></p>";
       }
       document.getElementById("results").innerHTML = htmlString;
       return;

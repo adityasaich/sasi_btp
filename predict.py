@@ -20,8 +20,10 @@ class predict:
             crop_scaled = (index - crop_params[0])/crop_params[1]
             predictions.append(self.regressor.predict(np.array([[district_scaled,season_scaled,year_scaled,crop_scaled]]))[0])
         idxs = sorted(range(len(predictions)), key=lambda i: predictions[i])[-num:]
+        idxs = [ele for ele in reversed(idxs)]
         crops = self.params['labels']['Crop']
         crops_predicted = []
+        production_params = self.params['scaling']['ProductionPerArea']
         for idx in idxs:
-            crops_predicted.append(crops[idx])
+            crops_predicted.append([crops[idx],predictions[idx]*production_params[1]+production_params[0]])
         return crops_predicted
