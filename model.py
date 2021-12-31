@@ -35,6 +35,10 @@ def processData(df_input):
     df_input = df_input.replace(r'^\s*$', np.NaN, regex=True)
     #drop null values
     df_input = df_input.dropna()
+    p1 = np.percentile(np.array(df_input['ProductionPerArea']),25)
+    p2 = np.percentile(np.array(df_input['ProductionPerArea']),99)
+    df_input = df_input[df_input['ProductionPerArea'] > p1]
+    df_input = df_input[df_input['ProductionPerArea'] < p2]
     return df_input
 
 def encodeAndNormalizeData(df_input):

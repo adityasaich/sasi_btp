@@ -8,6 +8,7 @@ fetch(new URL(document.URL) + "options?param=Season")
   .then((data) => (document.getElementById("season").innerHTML = data.result));
 
 function predict() {
+  document.getElementById("results").innerHTML = "Fetching Data 🥱🥱🥱";
   let body = {
     district: document.getElementById("districtName").value,
     season: document.getElementById("season").value,
@@ -33,5 +34,10 @@ function predict() {
         htmlString += "<p><h2>" + crops[i] + "</h2></p>";
       }
       document.getElementById("results").innerHTML = htmlString;
+      return;
+    })
+    .catch((error) => {
+      document.getElementById("results").innerHTML =
+        "Something Went Wrong 🤕🤕🤕";
     });
 }
