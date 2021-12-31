@@ -4,6 +4,8 @@ class predict:
         self.regressor = regressor
         self.params = params
     def predict(self,district,season,year,num = 3):
+        if(not year or year<2000 or year>2099):
+            return ['Year needs to between 2000 and 2099']
         district_value = self.params['labels']['District_Name'].index(district)
         district_params = self.params['scaling']['District_Name']
         district_scaled = (district_value - district_params[0])/district_params[1]
