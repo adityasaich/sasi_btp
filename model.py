@@ -4,6 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import r2_score
 import json
 from predict import predict
 
@@ -73,8 +74,8 @@ def classify(clf,x_train,x_test,y_train,y_test):
   clf.fit(x_train,y_train)
   y_pred = clf.predict(x_test)
   y_train_pred = clf.predict(x_train)
-  print(mean_squared_error(y_train, y_train_pred))
-  print(mean_squared_error(y_test, y_pred))
+  print(r2_score(y_train, y_train_pred))
+  print(r2_score(y_test, y_pred))
 
 def main():
     df_input = getData('dataworld_set.csv')

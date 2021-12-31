@@ -1,6 +1,30 @@
-body,
-html {
-  margin: 0;
-  font-family: sans-serif;
-  background-color: lightblue;
+body {
+  background-image: url("crop_yield.jpeg");
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  background-size: 100% 100%;
+  color: yellow;
+}
+section {
+  font-size: 22px;
+  color: yellow;
+  border-radius: 1em;
+  padding: 1em;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+}
+table,
+tr,
+td {
+  font-size: 40px;
+  font-family: monospace;
+  font-weight: bold;
+}
+h1 {
+  font-size: 40px;
+  font-family: monospace;
+  text-align: center;
 }
