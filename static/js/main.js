@@ -1,7 +1,7 @@
-fetch(new URL(document.URL) + "options?param=State_Name")
+fetch(new URL(document.URL) + "options?param=District_Name")
   .then((res) => res.json())
   .then(
-    (data) => (document.getElementById("stateName").innerHTML = data.result)
+    (data) => (document.getElementById("districtName").innerHTML = data.result)
   );
 fetch(new URL(document.URL) + "options?param=Season")
   .then((res) => res.json())
@@ -9,7 +9,7 @@ fetch(new URL(document.URL) + "options?param=Season")
 
 function predict() {
   let body = {
-    state: document.getElementById("stateName").value,
+    district: document.getElementById("districtName").value,
     season: document.getElementById("season").value,
     year: document.getElementById("year").value,
   };

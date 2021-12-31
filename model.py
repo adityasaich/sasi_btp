@@ -12,9 +12,9 @@ scaling_dict = {}
 regressor_dict = {}
 
 def deviationTransform(arr):
-  m = int(np.mean(arr))
+  #m = int(np.mean(arr))
   d = int(np.std(arr))
-  return [m,d]
+  return [0,d]
 def minMaxTransform(arr):
   min = int(np.min(arr))
   max = int(np.max(arr))
@@ -30,7 +30,7 @@ def processData(df_input):
     df_input = df_input[df_input['Production'] > 0 ]
     df_input["ProductionPerArea"] = ((df_input["Production"])/(df_input["Area"]))
     #dropping columns which are not used
-    df_input = df_input.drop(columns=['District_Name','Area','Production'])
+    df_input = df_input.drop(columns=['State_Name','Area','Production'])
     #replace empty strings with nan
     df_input = df_input.replace(r'^\s*$', np.NaN, regex=True)
     #drop null values
@@ -38,7 +38,7 @@ def processData(df_input):
     return df_input
 
 def encodeAndNormalizeData(df_input):
-    categorical_columns = ['State_Name', 'Crop' ,'Season']
+    categorical_columns = ['District_Name', 'Crop' ,'Season']
     for column in categorical_columns:
         le = LabelEncoder()
         le.fit(df_input[column])

@@ -20,8 +20,9 @@ def predict():
     body = json.loads(request.data)
     response={}
     try:
-        return{ 'result':classParams['obj'].predict(body['state'],body['season'],int(body['year']))}
+        return{ 'result':classParams['obj'].predict(body['district'],body['season'],int(body['year']))}
     except Exception as err:
+        response['body'] = str(err)
         response['status'] = 500
         return response
 
