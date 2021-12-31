@@ -29,6 +29,16 @@ def processData(df_input):
     df_input = df_input[df_input['Area'] > 0 ]
     df_input = df_input[df_input['Production'] > 0 ]
     df_input["ProductionPerArea"] = ((df_input["Production"])/(df_input["Area"]))
+    labels_dict['State_District_Map'] = {}
+    for _, row in df_input.iterrows():
+      key = row['State_Name']
+      value = row['District_Name']
+      if(key in labels_dict['State_District_Map']):
+        labels_dict['State_District_Map'][key].add(row['District_Name'])
+      else:
+         labels_dict['State_District_Map'][key] = set([row['District_Name']])
+    for key,value in labels_dict['State_District_Map'].items():
+      labels_dict['State_District_Map'][key] = list(value) 
     #dropping columns which are not used
     df_input = df_input.drop(columns=['State_Name','Area','Production'])
     #replace empty strings with nan

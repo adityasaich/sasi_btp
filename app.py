@@ -8,6 +8,11 @@ import json
 def index():
     return render_template('index.html')
 
+@app.route('/stateDistrictMap',methods=['GET'])
+def getStateDistrictMap():
+    result = classParams['params']['labels']['State_District_Map']
+    return {'result':result}
+
 @app.route('/options')
 def getOptions():
     result = ''

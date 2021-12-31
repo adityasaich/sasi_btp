@@ -13,6 +13,9 @@
   <body>
     <div class="param-form" >
       <form>
+        <br><label for="stateName">Choose a State:</label>
+        <select name="stateName" id="stateName" onChange="stateSelected()"></select></form></br>
+        <br></br>
         <br><label for="districtName">Choose a District:</label>
         <select name="districtName" id="districtName"></select></form></br>
         <br></br>
@@ -20,7 +23,7 @@
         <select name="season" id="season"></select></br>
         <br></br>
         <br><label for="year">Year:</label>
-        <input type="text" name="year" id="year" placeholder="20xx (curr yearby default)/"></br>
+        <input type="text" name="year" id="year" value="2022"></br>
         <br></br>
         <button onClick="predict()">Submit</button>
       </form>

@@ -1,19 +1,24 @@
-fetch(new URL(document.URL) + "options?param=District_Name")
+let stateDistrictMap;
+fetch(new URL(document.URL) + "/stateDistrictMap")
   .then((res) => res.json())
-  .then(
-    (data) => (document.getElementById("districtName").innerHTML = data.result)
-  );
+  .then((data) => {
+    stateDistrictMap = data["result"];
+    document.getElementById("stateName").innerHTML = List2PicklistValue(
+      Object.keys(stateDistrictMap)
+    );
+  });
 fetch(new URL(document.URL) + "options?param=Season")
   .then((res) => res.json())
   .then((data) => (document.getElementById("season").innerHTML = data.result));
 
 function predict() {
-  document.getElementById("results").innerHTML = "Fetching Data 🥱🥱🥱";
+  document.getElementById("results").innerHTML = "Fetching Data ⏳⏳⏳";
   let body = {
     district: document.getElementById("districtName").value,
     season: document.getElementById("season").value,
     year: document.getElementById("year").value,
   };
+  if (!body.district || !body.season || !body.year) return;
   fetch(new URL(document.URL) + "predict", {
     method: "POST",
     mode: "same-origin",
@@ -37,7 +42,23 @@ function predict() {
       return;
     })
     .catch((error) => {
+      console.log("error while prediction " + error.data);
       document.getElementById("results").innerHTML =
         "Something Went Wrong 🤕🤕🤕";
     });
+}
+
+function List2PicklistValue(list) {
+  result = "";
+  for (idx in list) {
+    result += "<option value='" + list[idx] + "'>" + list[idx] + "</option>\n";
+  }
+  return result;
+}
+
+function stateSelected() {
+  let state = document.getElementById("stateName").value;
+  document.getElementById("districtName").innerHTML = List2PicklistValue(
+    stateDistrictMap[state]
+  );
 }
