@@ -9,27 +9,24 @@
       href="{{ url_for('static', filename='css/main.css') }}"
     />
     <title>Crop Yield Prediction</title>
+    <h1>Crop Yield Prediction</h1>
   </head>
   <body>
-    <div class="param-form" >
+      <section>
       <form>
         <br><label for="stateName">Choose a State:</label>
-        <select name="stateName" id="stateName"></select></form></br>
-        <br></br>
-        <br><label for="stateName">Choose a Season:</label>
+        <select name="stateName" id="stateName" onChange="stateSelected()"></select></br>
+        <br><label for="districtName">Choose a District:</label>
+        <select name="districtName" id="districtName"></select></form></br>
+        <br><label for="season">Choose a Season:</label>
         <select name="season" id="season"></select></br>
-        <br></br>
         <br><label for="year">Year:</label>
-        <input type="text" name="year" id="year" placeholder="20xx (curr yearby default)/"></br>
-        <br></br>
+        <input type="text" name="year" id="year" value="2022"></br>
         <button onClick="predict()">Submit</button>
       </form>
-    </div>
-    <br></br>
-    <div>
-      <p>List of Top 3 Crops for The Given Season And Area ⬇️⬇️</p>
+      <p>top 3 crops along with yield in tonnes/hectare ⬇️⬇️</p>
       <p id="results">Submit the Form to get Results 😎 </p>
-    </div>
+      </section>
   </body>
   <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </html>

@@ -4,6 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
 from sklearn.ensemble import RandomForestRegressor
+from sklearn.metrics import r2_score
 import json
 from predict import predict
 
@@ -12,9 +13,9 @@ scaling_dict = {}
 regressor_dict = {}
 
 def deviationTransform(arr):
-  m = int(np.mean(arr))
+  #m = int(np.mean(arr))
   d = int(np.std(arr))
-  return [m,d]
+  return [0,d]
 def minMaxTransform(arr):
   min = int(np.min(arr))
   max = int(np.max(arr))
@@ -29,16 +30,30 @@ def processData(df_input):
     df_input = df_input[df_input['Area'] > 0 ]
     df_input = df_input[df_input['Production'] > 0 ]
     df_input["ProductionPerArea"] = ((df_input["Production"])/(df_input["Area"]))
+    labels_dict['State_District_Map'] = {}
+    for _, row in df_input.iterrows():
+      key = row['State_Name']
+      value = row['District_Name']
+      if(key in labels_dict['State_District_Map']):
+        labels_dict['State_District_Map'][key].add(row['District_Name'])
+      else:
+         labels_dict['State_District_Map'][key] = set([row['District_Name']])
+    for key,value in labels_dict['State_District_Map'].items():
+      labels_dict['State_District_Map'][key] = list(value) 
     #dropping columns which are not used
-    df_input = df_input.drop(columns=['District_Name','Area','Production'])
+    df_input = df_input.drop(columns=['State_Name','Area','Production'])
     #replace empty strings with nan
     df_input = df_input.replace(r'^\s*$', np.NaN, regex=True)
     #drop null values
     df_input = df_input.dropna()
+    p1 = np.percentile(np.array(df_input['ProductionPerArea']),25)
+    p2 = np.percentile(np.array(df_input['ProductionPerArea']),99)
+    df_input = df_input[df_input['ProductionPerArea'] > p1]
+    df_input = df_input[df_input['ProductionPerArea'] < p2]
     return df_input
 
 def encodeAndNormalizeData(df_input):
-    categorical_columns = ['State_Name', 'Crop' ,'Season']
+    categorical_columns = ['District_Name', 'Crop' ,'Season']
     for column in categorical_columns:
         le = LabelEncoder()
         le.fit(df_input[column])
@@ -59,8 +74,8 @@ def classify(clf,x_train,x_test,y_train,y_test):
   clf.fit(x_train,y_train)
   y_pred = clf.predict(x_test)
   y_train_pred = clf.predict(x_train)
-  print(mean_squared_error(y_train, y_train_pred))
-  print(mean_squared_error(y_test, y_pred))
+  print(r2_score(y_train, y_train_pred))
+  print(r2_score(y_test, y_pred))
 
 def main():
     df_input = getData('dataworld_set.csv')
