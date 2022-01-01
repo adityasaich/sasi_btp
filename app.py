@@ -5,7 +5,6 @@ app = Flask(__name__)
 classParams = {}
 import json
 port = int(os.environ.get('PORT', 5000))
-app.run(host='0.0.0.0', port=port)
 @app.route('/',methods=['GET','POST'])
 def index():
     return render_template('index.html')
@@ -38,4 +37,4 @@ f = open('params_from_ml.json')
 data = json.load(f)
 f.close()
 classParams['params'] = data
-app.run(debug=False)
+app.run(host='0.0.0.0', port=port,debug=False)
