@@ -6,10 +6,16 @@ fetch(new URL(document.URL) + "/stateDistrictMap")
     document.getElementById("stateName").innerHTML = List2PicklistValue(
       Object.keys(stateDistrictMap)
     );
+  })
+  .catch((error) => {
+    console.log("error getting states and districts from server :(");
   });
 fetch(new URL(document.URL) + "options?param=Season")
   .then((res) => res.json())
-  .then((data) => (document.getElementById("season").innerHTML = data.result));
+  .then((data) => (document.getElementById("season").innerHTML = data.result))
+  .catch((error) => {
+    console.log("error getting seasons from server :(");
+  });
 
 function predict() {
   document.getElementById("results").innerHTML = "Fetching Data ⏳⏳⏳";
@@ -18,7 +24,11 @@ function predict() {
     season: document.getElementById("season").value,
     year: document.getElementById("year").value,
   };
-  if (!body.district || !body.season || !body.year) return;
+  if (!body.district || !body.season || !body.year) {
+    document.getElementById("results").innerHTML =
+      "Select a State and Fill the Year";
+    return;
+  }
   fetch(new URL(document.URL) + "predict", {
     method: "POST",
     mode: "same-origin",
