@@ -2,106 +2,139 @@ import pandas as pd
 import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
-import json
-from predict import predict
-
-labels_dict = {}
-scaling_dict = {}
-regressor_dict = {}
-
-def deviationTransform(arr):
-  #m = int(np.mean(arr))
-  d = int(np.std(arr))
-  return [0,d]
-def minMaxTransform(arr):
-  min = int(np.min(arr))
-  max = int(np.max(arr))
-  return [min,max-min]
-    #label encoder dict
 
 
-def getData(fileName):
-    return pd.read_csv(fileName)
+class model:
+    def __init__(self):
+        self.regressor = None
+        self.params = {}
+        self.labels_dict = {}
+        self.scaling_dict = {}
+        self.df = None
 
-def processData(df_input):
-    df_input = df_input[df_input['Area'] > 0 ]
-    df_input = df_input[df_input['Production'] > 0 ]
-    df_input["ProductionPerArea"] = ((df_input["Production"])/(df_input["Area"]))
-    labels_dict['State_District_Map'] = {}
-    for _, row in df_input.iterrows():
-      key = row['State_Name']
-      value = row['District_Name']
-      if(key in labels_dict['State_District_Map']):
-        labels_dict['State_District_Map'][key].add(row['District_Name'])
-      else:
-         labels_dict['State_District_Map'][key] = set([row['District_Name']])
-    for key,value in labels_dict['State_District_Map'].items():
-      labels_dict['State_District_Map'][key] = list(value) 
-    #dropping columns which are not used
-    df_input = df_input.drop(columns=['State_Name','Area','Production'])
-    #replace empty strings with nan
-    df_input = df_input.replace(r'^\s*$', np.NaN, regex=True)
-    #drop null values
-    df_input = df_input.dropna()
-    p1 = np.percentile(np.array(df_input['ProductionPerArea']),25)
-    p2 = np.percentile(np.array(df_input['ProductionPerArea']),99)
-    df_input = df_input[df_input['ProductionPerArea'] > p1]
-    df_input = df_input[df_input['ProductionPerArea'] < p2]
-    return df_input
+    def deviationTransform(self, arr):
+        d = int(np.std(arr))
+        return [0, d]
 
-def encodeAndNormalizeData(df_input):
-    categorical_columns = ['District_Name', 'Crop' ,'Season']
-    for column in categorical_columns:
-        le = LabelEncoder()
-        le.fit(df_input[column])
-        df_input[column] = le.transform(df_input[column])
-        labels_dict[column] = list(le.classes_)
-        scaling_params = minMaxTransform(np.array(df_input[column]))
-        df_input[column] = (df_input[column] - scaling_params[0])/scaling_params[1]
-        scaling_dict[column] = scaling_params
-    scaling_params = minMaxTransform(np.array(df_input['Crop_Year'])) 
-    scaling_dict['Crop_Year'] = scaling_params
-    df_input['Crop_Year'] = (df_input['Crop_Year'] - scaling_params[0])/scaling_params[1]
-    scaling_params = deviationTransform(np.array(df_input['ProductionPerArea']))
-    df_input['ProductionPerArea'] = (df_input['ProductionPerArea'] - scaling_params[0])/scaling_params[1]
-    scaling_dict['ProductionPerArea'] = scaling_params
-    return df_input
+    def minMaxTransform(self, arr):
+        min = int(np.min(arr))
+        max = int(np.max(arr))
+        return [min, max-min]
 
-def classify(clf,x_train,x_test,y_train,y_test):
-  clf.fit(x_train,y_train)
-  y_pred = clf.predict(x_test)
-  y_train_pred = clf.predict(x_train)
-  print(r2_score(y_train, y_train_pred))
-  print(r2_score(y_test, y_pred))
+    def getData(self, fileName):
+        self.df = pd.read_csv(fileName)
 
-def main():
-    df_input = getData('dataworld_set.csv')
-    df_input = processData(df_input)
-    df_input = encodeAndNormalizeData(df_input)
-    df_input.columns.name = None
-    df = df_input
-    x_train, x_test, y_train, y_test = train_test_split(df.iloc[:,:-1], df.iloc[:,-1], test_size=0.33, random_state=42)
-    regressor = RandomForestRegressor(n_estimators = 10 ,random_state = 0)
-    print("\t\t\t random-forest classifier")
-    classify(regressor,x_train,x_test,y_train,y_test)
-    regressor_dict['regressor'] = regressor
+    def preProcessData(self):
+        self.df = self.df[self.df['Area'] > 0]
+        self.df = self.df[self.df['Production'] > 0]
+        self.df["ProductionPerArea"] = (
+            (self.df["Production"])/(self.df["Area"]))
+        self.labels_dict['State_District_Map'] = {}
+        for _, row in self.df.iterrows():
+            key = row['State_Name']
+            value = row['District_Name']
+            if key in self.labels_dict['State_District_Map']:
+                self.labels_dict['State_District_Map'][key].add(
+                    row['District_Name'])
+            else:
+                self.labels_dict['State_District_Map'][key] = set(
+                    [row['District_Name']])
+        for key, value in self.labels_dict['State_District_Map'].items():
+            self.labels_dict['State_District_Map'][key] = list(value)
+        # dropping columns which are not used
+        self.df = self.df.drop(columns=['State_Name', 'Area', 'Production'])
+        # replace empty strings with nan
+        self.df = self.df.replace(r'^\s*$', np.NaN, regex=True)
+        # drop null values
+        self.df = self.df.dropna()
+        p1 = np.percentile(np.array(self.df['ProductionPerArea']), 25)
+        p2 = np.percentile(np.array(self.df['ProductionPerArea']), 99)
+        self.df = self.df[self.df['ProductionPerArea'] > p1]
+        self.df = self.df[self.df['ProductionPerArea'] < p2]
+
+    def encodeAndNormalizeData(self):
+        categorical_columns = ['District_Name', 'Crop', 'Season']
+        for column in categorical_columns:
+            le = LabelEncoder()
+            le.fit(self.df[column])
+            self.df[column] = le.transform(self.df[column])
+            self.labels_dict[column] = list(le.classes_)
+            scaling_params = self.minMaxTransform(np.array(self.df[column]))
+            self.df[column] = (self.df[column] -
+                               scaling_params[0])/scaling_params[1]
+            self.scaling_dict[column] = scaling_params
+        scaling_params = self.minMaxTransform(np.array(self.df['Crop_Year']))
+        self.scaling_dict['Crop_Year'] = scaling_params
+        self.df['Crop_Year'] = (self.df['Crop_Year'] -
+                                scaling_params[0])/scaling_params[1]
+        scaling_params = self.deviationTransform(
+            np.array(self.df['ProductionPerArea']))
+        self.df['ProductionPerArea'] = (
+            self.df['ProductionPerArea'] - scaling_params[0])/scaling_params[1]
+        self.scaling_dict['ProductionPerArea'] = scaling_params
+
+    def classify(self, x_train, x_test, y_train, y_test):
+        self.regressor.fit(x_train, y_train)
+        y_pred = self.regressor.predict(x_test)
+        y_train_pred = self.regressor.predict(x_train)
+        print(r2_score(y_train, y_train_pred))
+        print(r2_score(y_test, y_pred))
+
+    def dumpData(self):
+        json_params = {}
+        json_params['labels'] = self.labels_dict
+        json_params['scaling'] = self.scaling_dict
+        self.params = json_params
+
+    def predict(self, district, season, year, num=3):
+        if(not year or year < 2000 or year > 2099):
+            return [['Year needs to between 2000 and 2099', '']]
+        district_value = self.params['labels']['District_Name'].index(district)
+        district_params = self.params['scaling']['District_Name']
+        district_scaled = (
+            district_value - district_params[0])/district_params[1]
+        season_value = self.params['labels']['Season'].index(season)
+        season_params = self.params['scaling']['Season']
+        season_scaled = (season_value - season_params[0])/season_params[1]
+        year_params = self.params['scaling']['Crop_Year']
+        year_scaled = (year - year_params[0])/year_params[1]
+        crop_params = self.params['scaling']['Crop']
+        predictions = []
+        for index, _ in enumerate(self.params['labels']['Crop']):
+            crop_scaled = (index - crop_params[0])/crop_params[1]
+            dfPred = pd.DataFrame(
+                [[district_scaled, season_scaled, year_scaled, crop_scaled]], columns=['District_Name', 'Season', 'Crop_Year', 'Crop'])
+            predictions.append(self.regressor.predict(
+                np.array(dfPred))[0])
+        idxs = sorted(range(len(predictions)),
+                      key=lambda i: predictions[i])[-num:]
+        idxs = [ele for ele in reversed(idxs)]
+        crops = self.params['labels']['Crop']
+        crops_predicted = []
+        production_params = self.params['scaling']['ProductionPerArea']
+        for idx in idxs:
+            crops_predicted.append(
+                [crops[idx], predictions[idx]*production_params[1]+production_params[0]])
+        return crops_predicted
+
+    def main(self):
+        try:
+            self.getData('dataworld_set.csv')
+            self.preProcessData()
+            self.encodeAndNormalizeData()
+            x_train, x_test, y_train, y_test = train_test_split(
+                self.df.iloc[:, :-1], self.df.iloc[:, -1], test_size=0.33, random_state=42)
+            self.regressor = RandomForestRegressor(
+                n_estimators=10, random_state=0)
+            print("\t\t\t random-forest classifier")
+            self.classify(x_train, x_test, y_train, y_test)
+            self.dumpData()
+        except Exception as err:
+            print("error running model main code " + str(err))
 
 
-
-def start():
-    main()
-    json_params = {}
-    json_params['labels'] = labels_dict
-    json_params['scaling'] = scaling_dict
-    predictObj = predict(regressor_dict['regressor'],json_params)
-    json_params['scaling']
-    my_file=open("params_from_ml.json","w")
-    my_file.write(json.dumps(json_params))
-    my_file.close()
-    return predictObj
-
-
-
+if __name__ == '__main__':
+    mode = model()
+    mode.main()

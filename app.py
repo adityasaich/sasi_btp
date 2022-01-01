@@ -1,40 +1,43 @@
-from flask import Flask, render_template,request
-import model
+import json
+from flask import Flask, render_template, make_response, request
+from model import model
 import os
 app = Flask(__name__)
 classParams = {}
-import json
 port = int(os.environ.get('PORT', 5000))
-@app.route('/',methods=['GET','POST'])
+
+
+@app.route('/', methods=['GET'])
 def index():
     return render_template('index.html')
 
-@app.route('/stateDistrictMap',methods=['GET'])
+
+@app.route('/stateDistrictMap', methods=['GET'])
 def getStateDistrictMap():
-    result = classParams['params']['labels']['State_District_Map']
-    return {'result':result}
+    result = clf.params['labels']['State_District_Map']
+    return {'result': result}
+
 
 @app.route('/options')
 def getOptions():
     result = ''
-    for option in classParams['params']['labels'][request.args.get('param')]:
-        result += '<option value=\'{option}\'>{option}</option>'.format(option=option)
-    return {'result':result}
+    for option in clf.params['labels'][request.args.get('param')]:
+        result += '<option value=\'{option}\'>{option}</option>'.format(
+            option=option)
+    return {'result': result}
 
-@app.route('/predict',methods=['GET','POST'])
+
+@app.route('/predict', methods=['GET', 'POST'])
 def predict():
     body = json.loads(request.data)
-    response={}
+    response = {}
     try:
-        return{ 'result':classParams['obj'].predict(body['district'],body['season'],int(body['year']))}
+        return{'result': clf.predict(body['district'], body['season'], int(body['year']))}
     except Exception as err:
-        response['body'] = str(err)
-        response['status'] = 500
-        return response
+        print("while predicting error has occured " + str(err))
+        return make_response("error while prediction", 500)
 
-classParams['obj'] = model.start()
-f = open('params_from_ml.json')
-data = json.load(f)
-f.close()
-classParams['params'] = data
-app.run(host='0.0.0.0', port=port,debug=False)
+
+clf = model()
+clf.main()
+app.run(host='0.0.0.0', port=port, debug=False)
