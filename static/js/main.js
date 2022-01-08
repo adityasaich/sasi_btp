@@ -16,17 +16,23 @@ fetch(new URL(document.URL) + "options?param=Season")
   .catch((error) => {
     console.log("error getting seasons from server :(");
   });
-
+fetch(new URL(document.URL) + "options?param=Crop")
+  .then((res) => res.json())
+  .then((data) => (document.getElementById("crop").innerHTML = data.result))
+  .catch((error) => {
+    console.log("error getting crops from server :(");
+  });
 function predict() {
   document.getElementById("results").innerHTML = "Fetching Data ⏳⏳⏳";
   let body = {
     district: document.getElementById("districtName").value,
     season: document.getElementById("season").value,
     year: document.getElementById("year").value,
+    crop: document.getElementById("crop").value,
   };
-  if (!body.district || !body.season || !body.year) {
+  if (!body.district || !body.season || !body.year || !body.crop) {
     document.getElementById("results").innerHTML =
-      "Select a State and Fill the Year";
+      "Select a State,District,Crop and Season";
     return;
   }
   fetch(new URL(document.URL) + "predict", {

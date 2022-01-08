@@ -32,7 +32,9 @@ def predict():
     body = json.loads(request.data)
     response = {}
     try:
-        return{'result': clf.predict(body['district'], body['season'], int(body['year']))}
+        response = clf.predict(
+            body['district'], body['season'], int(body['year']), body['crop'])
+        return make_response({"result": response[0]}, response[1])
     except Exception as err:
         print("while predicting error has occured " + str(err))
         return make_response("error while prediction", 500)
