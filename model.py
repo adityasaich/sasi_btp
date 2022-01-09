@@ -4,6 +4,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import r2_score
+import os
 
 
 class model:
@@ -27,10 +28,20 @@ class model:
         self.df = pd.read_csv(fileName)
 
     def preProcessData(self):
+        if(os.getenv('PY_ENV') != None):
+            self.df = self.df.sample(n=1000)
         self.df = self.df[self.df['Area'] > 0]
         self.df = self.df[self.df['Production'] > 0]
         self.df["ProductionPerArea"] = (
             (self.df["Production"])/(self.df["Area"]))
+        # replace empty strings with nan
+        self.df = self.df.replace(r'^\s*$', np.NaN, regex=True)
+        # drop null values
+        self.df = self.df.dropna()
+        p1 = np.percentile(np.array(self.df['ProductionPerArea']), 25)
+        p2 = np.percentile(np.array(self.df['ProductionPerArea']), 99)
+        self.df = self.df[self.df['ProductionPerArea'] > p1]
+        self.df = self.df[self.df['ProductionPerArea'] < p2]
         self.labels_dict['State_District_Map'] = {}
         for _, row in self.df.iterrows():
             key = row['State_Name']
@@ -43,16 +54,7 @@ class model:
                     [row['District_Name']])
         for key, value in self.labels_dict['State_District_Map'].items():
             self.labels_dict['State_District_Map'][key] = list(value)
-        # dropping columns which are not used
         self.df = self.df.drop(columns=['State_Name', 'Area', 'Production'])
-        # replace empty strings with nan
-        self.df = self.df.replace(r'^\s*$', np.NaN, regex=True)
-        # drop null values
-        self.df = self.df.dropna()
-        p1 = np.percentile(np.array(self.df['ProductionPerArea']), 25)
-        p2 = np.percentile(np.array(self.df['ProductionPerArea']), 99)
-        self.df = self.df[self.df['ProductionPerArea'] > p1]
-        self.df = self.df[self.df['ProductionPerArea'] < p2]
 
     def encodeAndNormalizeData(self):
         categorical_columns = ['District_Name', 'Crop', 'Season']
@@ -88,7 +90,7 @@ class model:
         json_params['scaling'] = self.scaling_dict
         self.params = json_params
 
-    def predict(self, district, season, year, num=3):
+    def predict(self, district, season, year, crop):
         if(not year or year < 2000 or year > 2099):
             return [['Year needs to between 2000 and 2099', '']]
         district_value = self.params['labels']['District_Name'].index(district)
@@ -101,23 +103,27 @@ class model:
         year_params = self.params['scaling']['Crop_Year']
         year_scaled = (year - year_params[0])/year_params[1]
         crop_params = self.params['scaling']['Crop']
-        predictions = []
-        for index, _ in enumerate(self.params['labels']['Crop']):
-            crop_scaled = (index - crop_params[0])/crop_params[1]
-            dfPred = pd.DataFrame(
-                [[district_scaled, season_scaled, year_scaled, crop_scaled]], columns=['District_Name', 'Season', 'Crop_Year', 'Crop'])
-            predictions.append(self.regressor.predict(
-                np.array(dfPred))[0])
-        idxs = sorted(range(len(predictions)),
-                      key=lambda i: predictions[i])[-num:]
-        idxs = [ele for ele in reversed(idxs)]
-        crops = self.params['labels']['Crop']
-        crops_predicted = []
         production_params = self.params['scaling']['ProductionPerArea']
-        for idx in idxs:
-            crops_predicted.append(
-                [crops[idx], predictions[idx]*production_params[1]+production_params[0]])
-        return crops_predicted
+        predictions = []
+        crops_predicted = []
+        if(crop == '' or crop == 'Select'):
+            crops = self.params['labels']['Crop']
+            for index, _ in enumerate(self.params['labels']['Crop']):
+                crop_scaled = (index - crop_params[0])/crop_params[1]
+                dfPred = pd.DataFrame(
+                    [[district_scaled, year_scaled, season_scaled, crop_scaled]], columns=['District_Name', 'Crop_Year', 'Season', 'Crop'])
+                predictions.append(self.regressor.predict(
+                    (dfPred)))
+                crops_predicted.append(
+                    [crops[index], predictions[index][0]*production_params[1]+production_params[0]])
+            return crops_predicted, 200
+        else:
+            crop_value = self.params['labels']['Crop'].index(crop)
+            crop_scaled = (crop_value - crop_params[0])/crop_params[1]
+            dfPred = pd.DataFrame(
+                [[district_scaled, year_scaled, season_scaled, crop_scaled]], columns=['District_Name', 'Crop_Year', 'Season', 'Crop'])
+            production_pred = self.regressor.predict(dfPred)
+            return [[crop, production_pred[0]*production_params[1]+production_params[0]]], 200
 
     def main(self):
         try:
@@ -132,7 +138,7 @@ class model:
             self.classify(x_train, x_test, y_train, y_test)
             self.dumpData()
         except Exception as err:
-            print("error running model main code " + str(err))
+            print("error running model.py main method ", type(err), err)
 
 
 if __name__ == '__main__':

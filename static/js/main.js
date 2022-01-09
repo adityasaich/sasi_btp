@@ -16,17 +16,34 @@ fetch(new URL(document.URL) + "options?param=Season")
   .catch((error) => {
     console.log("error getting seasons from server :(");
   });
-
+fetch(new URL(document.URL) + "options?param=Crop")
+  .then((res) => res.json())
+  .then((data) => (document.getElementById("crop").innerHTML = data.result))
+  .catch((error) => {
+    console.log("error getting crops from server :(");
+  });
 function predict() {
   document.getElementById("results").innerHTML = "Fetching Data ⏳⏳⏳";
   let body = {
     district: document.getElementById("districtName").value,
     season: document.getElementById("season").value,
     year: document.getElementById("year").value,
+    crop: document.getElementById("crop").value,
   };
-  if (!body.district || !body.season || !body.year) {
-    document.getElementById("results").innerHTML =
-      "Select a State and Fill the Year";
+  if (document.getElementById("stateName").value == "Select") {
+    document.getElementById("results").innerHTML = "Select a State";
+    return;
+  }
+  if (body.district == "Select") {
+    document.getElementById("results").innerHTML = "Select a Ditrict";
+    return;
+  }
+  if (body.season == "Select") {
+    document.getElementById("results").innerHTML = "Select a Season ";
+    return;
+  }
+  if (body.year == "") {
+    document.getElementById("results").innerHTML = "Fill a Year ";
     return;
   }
   fetch(new URL(document.URL) + "predict", {
@@ -41,13 +58,22 @@ function predict() {
     referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
     body: JSON.stringify(body), // body data type must match "Content-Type" header
   })
-    .then((res) => res.json())
+    .then((res) => {
+      if (!res.ok) throw "response staus is not ok " + res.status;
+      return res.json();
+    })
     .then((data) => {
       let crops = data.result;
-      let htmlString = "";
+      let htmlString = "<table><tr><th>Crop</th><th>Yield</th></tr>";
       for (let i = 0; i < crops.length; i++) {
-        htmlString += "<p><h2>" + crops[i][0] + " " + crops[i][1] + "</h2></p>";
+        htmlString +=
+          "<tr><td>" +
+          crops[i][0] +
+          "</td><td>" +
+          crops[i][1].toFixed(2) +
+          "</td></tr>";
       }
+      htmlString += "</table>";
       document.getElementById("results").innerHTML = htmlString;
       return;
     })
@@ -57,9 +83,10 @@ function predict() {
         "Something Went Wrong 🤕🤕🤕";
     });
 }
-
+document.getElementById("districtName").innerHTML =
+  "<option value='Select'>Select A State</option>";
 function List2PicklistValue(list) {
-  result = "";
+  result = "<option value='Select'>Select</option>";
   for (idx in list) {
     result += "<option value='" + list[idx] + "'>" + list[idx] + "</option>\n";
   }
@@ -68,7 +95,12 @@ function List2PicklistValue(list) {
 
 function stateSelected() {
   let state = document.getElementById("stateName").value;
-  document.getElementById("districtName").innerHTML = List2PicklistValue(
-    stateDistrictMap[state]
-  );
+  if (state == "Select") {
+    document.getElementById("districtName").innerHTML =
+      "<option value='Select'>Select A State</option>";
+  } else {
+    document.getElementById("districtName").innerHTML = List2PicklistValue(
+      stateDistrictMap[state]
+    );
+  }
 }
