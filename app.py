@@ -20,7 +20,7 @@ def getStateDistrictMap():
 
 @app.route('/options')
 def getOptions():
-    result = ''
+    result = '<option value=\'Select\'>Select</option>'
     for option in clf.params['labels'][request.args.get('param')]:
         result += '<option value=\'{option}\'>{option}</option>'.format(
             option=option)

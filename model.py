@@ -105,22 +105,18 @@ class model:
         crop_params = self.params['scaling']['Crop']
         production_params = self.params['scaling']['ProductionPerArea']
         predictions = []
-        if(crop == ''):
+        crops_predicted = []
+        if(crop == '' or crop == 'Select'):
+            crops = self.params['labels']['Crop']
             for index, _ in enumerate(self.params['labels']['Crop']):
                 crop_scaled = (index - crop_params[0])/crop_params[1]
                 dfPred = pd.DataFrame(
                     [[district_scaled, year_scaled, season_scaled, crop_scaled]], columns=['District_Name', 'Crop_Year', 'Season', 'Crop'])
                 predictions.append(self.regressor.predict(
                     (dfPred)))
-            idxs = sorted(range(len(predictions)),
-                          key=lambda i: predictions[i])[-3:]
-            idxs = [ele for ele in reversed(idxs)]
-            crops = self.params['labels']['Crop']
-            crops_predicted = []
-            for idx in idxs:
                 crops_predicted.append(
-                    [crops[idx], predictions[idx][0]*production_params[1]+production_params[0]])
-            return crops_predicted, 302
+                    [crops[index], predictions[index][0]*production_params[1]+production_params[0]])
+            return crops_predicted, 200
         else:
             crop_value = self.params['labels']['Crop'].index(crop)
             crop_scaled = (crop_value - crop_params[0])/crop_params[1]
